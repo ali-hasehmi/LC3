@@ -6,39 +6,35 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-
         fprintf(stderr,
                 "error: No Input File\n");
         exit(-1);
     }
-    char *output_file = "a.bin";
-    char *input_file = NULL;
+    char *output_file_path = "a.bin";
+    char *input_file_path = NULL;
     for (int i = 1; i < argc; ++i)
     {
         if (!strcmp(argv[i], "-o"))
         {
-            output_file = argv[++i];
+            output_file_path = argv[++i];
         }
         else
         {
-            input_file = argv[i];
+            input_file_path = argv[i];
         }
     }
-    if (input_file == NULL)
+    if (input_file_path == NULL)
     {
         fprintf(stderr,
                 "error: No Input File\n");
         exit(-1);
     }
-    if (output_file == NULL)
+    if (output_file_path == NULL)
     {
         fprintf(stderr,
                 "error: missing filename after '-o'\n");
         exit(-1);
     }
     
-    // printf("success!\ninptut_file=%s\noutput_file=%s\n",
-    //         input_file,
-    //         output_file);
-    return 0;
+        return 0;
 }
