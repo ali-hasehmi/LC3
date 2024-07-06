@@ -5,6 +5,24 @@
 #include <map>
 #include <cstdint>
 
+#define ADD_OPCODE 4096
+#define AND_OPCODE 20480
+#define BR_OPCODE 0
+#define JMP_OPCODE 49152
+#define JSR_OPCODE 16384
+#define JSRR_OPCODE 16384
+#define LD_OPCODE 8192
+#define LDI_OPCODE 40960
+#define LDR_OPCODE 24576
+#define LEA_OPCODE 57344
+#define NOT_OPCODE 36864
+#define RET_OPCODE 49152
+#define RTI_OPCODE 32768
+#define ST_OPCODE 12288
+#define STI_OPCODE 45056
+#define STR_OPCODE 28672
+#define TRAP_OPCODE 61440
+
 int handleORGKW(std::vector<std::string> &l)
 {
     if (l.size() != 2)
@@ -159,9 +177,25 @@ int main(int argc, char *argv[])
         exit(-1);
         break;
     }
-    
-    uint16_t test = binToUI16("0b0001000000000000");
-    std::cout << test << std::endl;
+
+    printf("ADD: %hu\n", binToUI16("0b0001000000000000"));
+    printf("AND: %hu\n", binToUI16("0b0101000000000000"));
+    printf("BR: %hu\n", binToUI16("0b0000000000000000"));
+    printf("JMP: %hu\n", binToUI16("0b1100000000000000"));
+    printf("JSR: %hu\n", binToUI16("0b0100000000000000"));
+    printf("JSRR: %hu\n", binToUI16("0b0100000000000000"));
+    printf("LD: %hu\n", binToUI16("0b0010000000000000"));
+    printf("LDI: %hu\n", binToUI16("0b1010000000000000"));
+    printf("LDR: %hu\n", binToUI16("0b0110000000000000"));
+    printf("LEA: %hu\n", binToUI16("0b1110000000000000"));
+    printf("NOT: %hu\n", binToUI16("0b1001000000000000"));
+    printf("RET: %hu\n", binToUI16("0b1100000000000000"));
+    printf("RTI: %hu\n", binToUI16("0b1000000000000000"));
+    printf("ST: %hu\n", binToUI16("0b0011000000000000"));
+    printf("STI: %hu\n", binToUI16("0b1011000000000000"));
+    printf("STR: %hu\n", binToUI16("0b0111000000000000"));
+    printf("TRAP: %hu\n", binToUI16("0b1111000000000000"));
+
     // std::map<std::string, u_int16_t> M;
     // M["ADD"] = 4096;   // 0b0001000000000000
     // M["AND"] = 20480;  // 0b0101000000000000
