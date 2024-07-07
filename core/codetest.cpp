@@ -4,7 +4,8 @@
 // tool functions
 void Fetch(uint16_t *Memory ,uint16_t &MAR ,uint16_t &IR ,uint16_t &PC){
     MAR = PC;
-    IR = Memory[MAR], PC++;
+    IR = Memory[MAR];
+    PC++;
 }
 int getNegNumber(int n){
     int negnumber = (-1)*(32-n);
@@ -34,16 +35,25 @@ uint16_t getPos(int base, int x){ //x = 9 , base = 16 that is sum of all bits=1 
     uint16_t pos = base + x;
     return pos;
 }
+int RegPrint(uint16_t R){
+    int result;
+    if(isNeg(32768, R))
+        result = getNeg(65536, R);
+    else result = R;
+    std::cout << result;
+}
+
+
 
 //Main functions (LC3 Operators)
-void ADD(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
     uint16_t SR1 = (IR & mask) / 64;
     mask = 32;
     uint16_t flag = (IR & mask) / 32;
-    if(flag = 0){ // SR2 exists
+    if(flag == 0){ // SR2 exists
         mask = 7;
         uint16_t SR2 = (IR & mask) / 1;
         int x ,y, z;
@@ -71,17 +81,19 @@ void ADD(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
             z = getNeg(65536 ,x+imm5_extended);
         else
             z = x+imm5_extended;
+        if(z < 0)   
+            z = getPos(65536,z);
         R[DR] = z;
     }
     if(R[DR] >= 32768) // determaine NZP
         NZP = 4;
     else if(R[DR] == 0)
         NZP = 2;
-    else
+    else 
         NZP = 1;
 
 }
-void AND(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void AND(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
@@ -106,7 +118,7 @@ void AND(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
     else
         NZP = 1;
 }
-void NOT(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void NOT(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
@@ -119,7 +131,7 @@ void NOT(uint16_t &IR ,uint16_t *R, uint8_t &NZP){
     else
         NZP = 1;
 }
-void LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 511;
@@ -142,7 +154,7 @@ void LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP)
     else
         NZP = 1;
 }
-void LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 511;
@@ -164,7 +176,7 @@ void LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP
     else
         NZP = 1;
 }
-void LDR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void LDR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 63;
@@ -265,7 +277,7 @@ void STR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
         z = x + y;
     Memory[z] = R[SR];
 }
-void BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP){
+void BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint8_t n, z, p;
     uint16_t mask = 2048;
     n = (IR & mask) / 2048;
@@ -275,23 +287,23 @@ void BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint8_t &NZP)
     p = (IR & mask) /512;;
     mask = 511;
     uint16_t pcoffset = (IR & mask);
-    int x, z;
+    int x, u;
     if(isNeg(256, pcoffset)){
         x = getNeg(512, pcoffset);
     }
     else x = pcoffset;
     if(x + PC < 0){
-        z = getPos(65536 ,x+PC);
+        u = getPos(65536 ,x+PC);
     }
-    else z = x + PC;
+    else u = x + PC;
     if( p == 1 && NZP == 1){
-        PC = z;
+        PC = u;
     }
     else if( z == 1 && NZP == 2){
-        PC = z;
+        PC = u;
     }
     else if( p == 1 && NZP == 4){
-        PC = z;
+        PC = u;
     }
 }
 void JMP(uint16_t &PC, uint16_t &IR , uint16_t *R){
@@ -323,7 +335,8 @@ void JSR(uint16_t &IR ,uint16_t &PC, uint16_t *R){
 
 
 
-void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_t &MAR, uint16_t *R,uint8_t &NZP){
+
+void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_t &MAR, uint16_t *R,uint16_t &NZP){
     uint16_t mask = 61440;
     uint16_t opcode = IR & mask;
     switch(opcode){
@@ -382,16 +395,37 @@ void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_
 
 
 int main(){
+
     uint16_t Memory[65536]; // 64k x 16 entire memory
     uint16_t PC = 24576; //3000 in hex
     uint16_t IR;
     uint16_t MDR;
     uint16_t MAR;
     uint16_t R[8]; // general registers
-    uint8_t NZP;
-    Memory[24576] = 4096;
-    Fetch(Memory,MAR,IR,PC);
-    Decode(Memory,PC,IR,MDR,MAR,R,NZP);
+    uint16_t NZP = 0;
+    //std:: cout << NZP << std::endl ;
+    Memory[PC] = 5316;
+        
+        R[3] = 256;
+        R[4] = 65024;
 
+        Fetch(Memory,MAR,IR,PC);
+        //std:: cout << NZP << std::endl ;
+        Decode(Memory,PC,IR,MDR,MAR,R,NZP);
+        //std:: cout << PC << std::endl ;
+        //std:: cout << IR << std::endl ;
+        //std:: cout << R[0] << std::endl ;
+        //std:: cout << R[1] << std::endl ;
+        //RegPrint(R[2]);
+        //std:: cout << std::endl;
+        //std:: cout << R[3] << std::endl ;
+        //std:: cout << R[4] << std::endl ;
+        //std:: cout << NZP << std::endl ;
+        uint16_t *x = (Memory+24576);
+        std:: cout << x << std::endl ;
+        //std:: cout << R[5] << std::endl ;
+        //std:: cout << R[6] << std::endl ;
+        //std:: cout << R[7] << std::endl ;
+    
 
 }
