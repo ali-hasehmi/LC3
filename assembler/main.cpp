@@ -23,6 +23,8 @@
 #define STR_OPCODE 28672
 #define TRAP_OPCODE 61440
 
+std::map<std::string, int> lableMap;
+
 int handleORGKW(std::vector<std::string> &l)
 {
     if (l.size() != 2)
@@ -178,23 +180,34 @@ int main(int argc, char *argv[])
         break;
     }
 
-    printf("ADD: %hu\n", binToUI16("0b0001000000000000"));
-    printf("AND: %hu\n", binToUI16("0b0101000000000000"));
-    printf("BR: %hu\n", binToUI16("0b0000000000000000"));
-    printf("JMP: %hu\n", binToUI16("0b1100000000000000"));
-    printf("JSR: %hu\n", binToUI16("0b0100000000000000"));
-    printf("JSRR: %hu\n", binToUI16("0b0100000000000000"));
-    printf("LD: %hu\n", binToUI16("0b0010000000000000"));
-    printf("LDI: %hu\n", binToUI16("0b1010000000000000"));
-    printf("LDR: %hu\n", binToUI16("0b0110000000000000"));
-    printf("LEA: %hu\n", binToUI16("0b1110000000000000"));
-    printf("NOT: %hu\n", binToUI16("0b1001000000000000"));
-    printf("RET: %hu\n", binToUI16("0b1100000000000000"));
-    printf("RTI: %hu\n", binToUI16("0b1000000000000000"));
-    printf("ST: %hu\n", binToUI16("0b0011000000000000"));
-    printf("STI: %hu\n", binToUI16("0b1011000000000000"));
-    printf("STR: %hu\n", binToUI16("0b0111000000000000"));
-    printf("TRAP: %hu\n", binToUI16("0b1111000000000000"));
+    for (int i = 1; i < tokens.size(); ++i)
+    {
+        if (tokens[i][0].at(tokens[i][0].size() - 1) == ',') // token is a label
+        {
+            lableMap[std::string(tokens[i][0], 0, tokens[i][0].size() - 1)] = i;
+        }
+    }
+    for (auto it : lableMap)
+    {
+        std::cout << it.first << " " << it.second << std::endl;
+    }
+    // printf("ADD: %hu\n", binToUI16("0b0001000000000000"));
+    // printf("AND: %hu\n", binToUI16("0b0101000000000000"));
+    // printf("BR: %hu\n", binToUI16("0b0000000000000000"));
+    // printf("JMP: %hu\n", binToUI16("0b1100000000000000"));
+    // printf("JSR: %hu\n", binToUI16("0b0100000000000000"));
+    // printf("JSRR: %hu\n", binToUI16("0b0100000000000000"));
+    // printf("LD: %hu\n", binToUI16("0b0010000000000000"));
+    // printf("LDI: %hu\n", binToUI16("0b1010000000000000"));
+    // printf("LDR: %hu\n", binToUI16("0b0110000000000000"));
+    // printf("LEA: %hu\n", binToUI16("0b1110000000000000"));
+    // printf("NOT: %hu\n", binToUI16("0b1001000000000000"));
+    // printf("RET: %hu\n", binToUI16("0b1100000000000000"));
+    // printf("RTI: %hu\n", binToUI16("0b1000000000000000"));
+    // printf("ST: %hu\n", binToUI16("0b0011000000000000"));
+    // printf("STI: %hu\n", binToUI16("0b1011000000000000"));
+    // printf("STR: %hu\n", binToUI16("0b0111000000000000"));
+    // printf("TRAP: %hu\n", binToUI16("0b1111000000000000"));
 
     // std::map<std::string, u_int16_t> M;
     // M["ADD"] = 4096;   // 0b0001000000000000
