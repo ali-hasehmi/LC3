@@ -1,19 +1,79 @@
+#include "exec.h"
+#include "ui_exec.h"
 #include <iostream>
-#include <stdint.h>
-#include <bits/stdc++.h>
-// tool functions
-void Fetch(uint16_t *Memory ,uint16_t &MAR ,uint16_t &IR ,uint16_t &PC){
-    MAR = PC;
-    IR = Memory[MAR];
-    PC++;
+#include <string>
+#include <sstream>
+
+Exec::Exec(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::Exec)
+{
+    ui->setupUi(this);
+    while(PC <= 65535){
+        Fetch(Memory,MAR,IR,PC);
+        Decode(Memory,PC,IR,MDR,MAR,R,NZP);
+    }
+    this->close();
+
+
 }
-int getNegNumber(int n){
+void Exec::updateDebugger(uint16_t *Memory,const uint16_t &PC,const uint16_t &IR,const uint16_t &MDR,const uint16_t &MAR,const uint16_t *R,const uint16_t &NZP){
+    QString S = QString::number(PC);
+    ui->PCVAL->setText(S);
+    ui->PCVAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(IR);
+    ui->IRVAL->setText(S);
+    ui->IRVAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(MDR);
+    ui->MDRVAL->setText(S);
+    ui->MDRVAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[0]);
+    ui->R0VAL->setText(S);
+    ui->R0VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[1]);
+    ui->R1VAL->setText(S);
+    ui->R1VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[0]);
+    ui->R0VAL->setText(S);
+    ui->R0VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[2]);
+    ui->R2VAL->setText(S);
+    ui->R2VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[3]);
+    ui->R3VAL->setText(S);
+    ui->R3VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[4]);
+    ui->R4VAL->setText(S);
+    ui->R4VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[5]);
+    ui->R5VAL->setText(S);
+    ui->R5VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[6]);
+    ui->R6VAL->setText(S);
+    ui->R6VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(R[7]);
+    ui->R7VAL->setText(S);
+    ui->R7VAL->setTextColor(QColor(12, 255, 0));
+    S = QString::number(NZP);
+    ui->NZPVAL->setText(S);
+    ui->NZPVAL->setTextColor(QColor(12, 255, 0));
+    uint16_t *x = (Memory+PC-1);
+    std::ostringstream oss;
+    oss  << x;
+    std::string address_a = oss.str();
+    QString qstr = QString::fromStdString(address_a);
+    //S = *x;
+    ui->MEMADDR->setText(qstr);
+    ui->MEMADDR->setTextColor(QColor(12, 255, 0));
+}
+
+int Exec::getNegNumber(int n){
     int negnumber = (-1)*(32-n);
     return negnumber;
 }
-int EXPANDimm5(uint16_t imm5){
+int Exec::EXPANDimm5(uint16_t imm5){
     if(imm5 >= 16) //number is negative
-    {   
+    {
         int negnumber = getNegNumber(imm5);
         return negnumber;
     }
@@ -22,20 +82,20 @@ int EXPANDimm5(uint16_t imm5){
         return posnumber;
     }
 }
-int getNeg(int base ,uint16_t x){ //x = 9 , base = 16 that is sum of all bits=1 plus 1
+int Exec::getNeg(int base ,uint16_t x){ //x = 9 , base = 16 that is sum of all bits=1 plus 1
     int neg = x - base;
     return neg;
 }
-bool isNeg(int base, uint16_t x){ // base is value in decimal if only leftmost bit is one
+bool Exec::isNeg(int base, uint16_t x){ // base is value in decimal if only leftmost bit is one
     if(x >= base)
         return true;
     else return false;
 }
-uint16_t getPos(int base, int x){ //x = 9 , base = 16 that is sum of all bits=1 plus 1
+uint16_t Exec::getPos(int base, int x){ //x = 9 , base = 16 that is sum of all bits=1 plus 1
     uint16_t pos = base + x;
     return pos;
 }
-int RegPrint(uint16_t R){
+int Exec::RegPrint(uint16_t R){
     int result;
     if(isNeg(32768, R))
         result = getNeg(65536, R);
@@ -45,8 +105,11 @@ int RegPrint(uint16_t R){
 
 
 
-//Main functions (LC3 Operators)
-void ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
+
+
+
+
+void Exec::ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
@@ -68,7 +131,7 @@ void ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
         z = x+y;
         R[DR] = z;
     }
-    else { // No SR2. imm5 
+    else { // No SR2. imm5
         mask = 31;
         uint16_t imm5 = IR & mask;
         int imm5_extended = EXPANDimm5(imm5);
@@ -81,7 +144,7 @@ void ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
             z = getNeg(65536 ,x+imm5_extended);
         else
             z = x+imm5_extended;
-        if(z < 0)   
+        if(z < 0)
             z = getPos(65536,z);
         R[DR] = z;
     }
@@ -89,23 +152,23 @@ void ADD(uint16_t IR ,uint16_t *R, uint16_t &NZP){
         NZP = 4;
     else if(R[DR] == 0)
         NZP = 2;
-    else 
+    else
         NZP = 1;
 
 }
-void AND(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::AND(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
     uint16_t SR1 = (IR & mask) / 64;
     mask = 32;
     uint16_t flag = (IR & mask) / 32;
-    if(flag = 0){ // SR2 exists
+    if(flag == 0){ // SR2 exists
         mask = 7;
         uint16_t SR2 = (IR & mask) / 1;
         R[DR] = R[SR1] & R[SR2];
     }
-    else { // No SR2. imm5 
+    else { // No SR2. imm5
         mask = 31;
         uint16_t imm5 = IR & mask;
         int imm5_extended = EXPANDimm5(imm5);
@@ -118,7 +181,7 @@ void AND(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     else
         NZP = 1;
 }
-void NOT(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::NOT(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 448;
@@ -131,7 +194,7 @@ void NOT(uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     else
         NZP = 1;
 }
-void LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 511;
@@ -154,7 +217,7 @@ void LD(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP
     else
         NZP = 1;
 }
-void LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 511;
@@ -176,7 +239,7 @@ void LDI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZ
     else
         NZP = 1;
 }
-void LDR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::LDR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 63;
@@ -204,7 +267,7 @@ void LDR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZ
     else
         NZP = 1;
 }
-void LEA(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
+void Exec::LEA(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
     uint16_t mask = 3584;
     uint16_t DR = (IR & mask) / 512;
     mask = 511;
@@ -221,7 +284,7 @@ void LEA(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
         x = PC + x;
     R[DR] = x;
 }
-void ST(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
+void Exec::ST(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
     uint16_t mask = 3584;
     uint16_t SR = (IR & mask) / 512;
     mask = 511;
@@ -238,7 +301,7 @@ void ST(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
         x = PC + x;
     Memory[x] = R[SR] ;
 }
-void STI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
+void Exec::STI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
     uint16_t mask = 3584;
     uint16_t SR = (IR & mask) / 512;
     mask = 511;
@@ -252,10 +315,10 @@ void STI(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
     if( PC + x < 0)
         x = getPos(65536, PC + x);
     else
-        x = PC + x;    
+        x = PC + x;
     Memory[Memory[x]] = R[SR] ;
 }
-void STR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
+void Exec::STR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
     uint16_t mask = 3584;
     uint16_t SR = (IR & mask) / 512;
     mask = 63;
@@ -277,14 +340,14 @@ void STR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R){
         z = x + y;
     Memory[z] = R[SR];
 }
-void BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
+void Exec::BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP){
     uint8_t n, z, p;
     uint16_t mask = 2048;
     n = (IR & mask) / 2048;
     mask = 1024;
     z = (IR & mask) /1024;
     mask = 512;
-    p = (IR & mask) /512;;
+    p = (IR & mask) /512;
     mask = 511;
     uint16_t pcoffset = (IR & mask);
     int x, u;
@@ -306,12 +369,12 @@ void BR(uint16_t *Memory, uint16_t &PC, uint16_t &IR ,uint16_t *R, uint16_t &NZP
         PC = u;
     }
 }
-void JMP(uint16_t &PC, uint16_t &IR , uint16_t *R){
+void Exec::JMP(uint16_t &PC, uint16_t &IR , uint16_t *R){
     uint16_t mask = 448;
     uint16_t BaseR = (IR & mask) / 64;
     PC = R[BaseR];
 }
-void JSR(uint16_t &IR ,uint16_t &PC, uint16_t *R){
+void Exec::JSR(uint16_t &IR ,uint16_t &PC, uint16_t *R){
     uint16_t temp = PC;
     uint16_t mask = 2048;
     uint16_t RorRR = (IR & mask) / 2048;
@@ -334,9 +397,13 @@ void JSR(uint16_t &IR ,uint16_t &PC, uint16_t *R){
 }
 
 
-
-
-void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_t &MAR, uint16_t *R,uint16_t &NZP){
+void Exec::Fetch(uint16_t *Memory ,uint16_t &MAR ,uint16_t &IR ,uint16_t &PC){
+    MAR = PC;
+    IR = Memory[MAR];
+    PC++;
+}
+void Exec::Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_t &MAR, uint16_t *R,uint16_t &NZP){
+    int flag = 0;
     uint16_t mask = 61440;
     uint16_t opcode = IR & mask;
     switch(opcode){
@@ -380,7 +447,9 @@ void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_
             JMP(PC, IR , R);
             break;
         case 53248://reserved
-
+            updateDebugger(Memory,PC,IR,MDR,MAR,R,NZP);
+            PC = 65536;
+            flag = 1;
             break;
         case 57344://LEA
             LEA(Memory, PC, IR, R);
@@ -388,44 +457,18 @@ void Decode(uint16_t *Memory, uint16_t &PC, uint16_t &IR, uint16_t &MDR, uint16_
         case 61440://TRAP
 
             break;
-    
+
     }
+    if(flag == 0)
+        updateDebugger(Memory,PC,IR,MDR,MAR,R,NZP);
 }
 
+Exec::~Exec()
+{
+    delete ui;
+}
 
-
-int main(){
-
-    uint16_t Memory[65536]; // 64k x 16 entire memory
-    uint16_t PC = 24576; //3000 in hex
-    uint16_t IR;
-    uint16_t MDR;
-    uint16_t MAR;
-    uint16_t R[8]; // general registers
-    uint16_t NZP = 0;
-    //std:: cout << NZP << std::endl ;
-    Memory[PC] = 5316;
-        
-        R[3] = 256;
-        R[4] = 65024;
-
-        Fetch(Memory,MAR,IR,PC);
-        //std:: cout << NZP << std::endl ;
-        Decode(Memory,PC,IR,MDR,MAR,R,NZP);
-        //std:: cout << PC << std::endl ;
-        //std:: cout << IR << std::endl ;
-        //std:: cout << R[0] << std::endl ;
-        //std:: cout << R[1] << std::endl ;
-        //RegPrint(R[2]);
-        //std:: cout << std::endl;
-        //std:: cout << R[3] << std::endl ;
-        //std:: cout << R[4] << std::endl ;
-        //std:: cout << NZP << std::endl ;
-        uint16_t *x = (Memory+24576);
-        std:: cout << x << std::endl ;
-        //std:: cout << R[5] << std::endl ;
-        //std:: cout << R[6] << std::endl ;
-        //std:: cout << R[7] << std::endl ;
-    
-
+void Exec::on_Exit_clicked()
+{
+    this->close();
 }
