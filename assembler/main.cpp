@@ -25,6 +25,90 @@
 
 std::map<std::string, int> lableMap;
 
+int stringToDec(const std::string& s){
+    
+}
+int stringToHex(const std::string& s){
+
+}
+int stringToBin(const std::string& s){
+
+}
+int16_t handleRegisters(const std::string &s)
+{
+    if (s == "R0")
+    {
+        return 0;
+    }
+    else if (s == "R1")
+    {
+        return 1;
+    }
+    else if (s == "R2")
+    {
+        return 2;
+    }
+    else if (s == "R3")
+    {
+        return 3;
+    }
+    else if (s == "R4")
+    {
+        return 4;
+    }
+    else if (s == "R5")
+    {
+        return 5;
+    }
+    else if (s == "R6")
+    {
+        return 6;
+    }
+    else if (s == "R7")
+    {
+        return 7;
+    }
+    else
+    {
+        return -1;
+    }
+}
+uint16_t handleAddOp(std::vector<std::string> &line)
+{
+    uint16_t command = ADD_OPCODE;
+    if (line.size() != 4)
+    {
+        fprintf(stderr,
+                "error: invalid number of operand for ADD command\n");
+        exit(-1);
+    }
+    int res = handleRegisters(std::string(line[1], 0, line[1].size() - 1));
+    if (res < 0)
+    {
+        fprintf(stderr,
+                "error: invalid destination register for ADD command\n");
+        exit(-1);
+    }
+    command = command | (res << 9);
+    res = handleRegisters(std::string(line[2], 0, line[2].size() - 1));
+    if (res < 0)
+    {
+        fprintf(stderr,
+                "error: invalid first operand register for ADD command\n");
+        exit(-1);
+    }
+    command = command | (res << 6);
+    res = handleRegisters(line[3]);
+    if (res < 0)
+    {
+        if (line[3][0] != '#' && line[3][0] != 'b' && line[3][0] != 'x')
+        {
+            fprintf(stderr,
+                    "error: invalid constant value for ADD command\n");
+            exit(-1);
+        }
+    }
+}
 int handleORGKW(std::vector<std::string> &l)
 {
     if (l.size() != 2)
@@ -185,6 +269,58 @@ int main(int argc, char *argv[])
         if (tokens[i][0].at(tokens[i][0].size() - 1) == ',') // token is a label
         {
             lableMap[std::string(tokens[i][0], 0, tokens[i][0].size() - 1)] = i;
+        }
+    }
+    for (int i = 0; i < tokens.size(); ++i)
+    {
+        if (tokens[i][0] == "ADD")
+        {
+            handleAddOp(tokens[i]);
+        }
+        else if (tokens[i][0] == "AND")
+        {
+        }
+        else if (tokens[i][0] == "JSR")
+        {
+        }
+        else if (tokens[i][0] == "JSRR")
+        {
+        }
+        else if (tokens[i][0] == "LD")
+        {
+        }
+        else if (tokens[i][0] == "LDI")
+        {
+        }
+        else if (tokens[i][0] == "LDR")
+        {
+        }
+        else if (tokens[i][0] == "LEA")
+        {
+        }
+        else if (tokens[i][0] == "NOT")
+        {
+        }
+        else if (tokens[i][0] == "RET")
+        {
+        }
+        else if (tokens[i][0] == "RTI")
+        {
+        }
+        else if (tokens[i][0] == "ST")
+        {
+        }
+        else if (tokens[i][0] == "STI")
+        {
+        }
+        else if (tokens[i][0] == "STR")
+        {
+        }
+        else if (tokens[i][0] == "TRAP")
+        {
+        }
+        else if (std::string(tokens[i][0], 0, 2) == "BR")
+        {
         }
     }
     for (auto it : lableMap)
